@@ -1,0 +1,17 @@
+services:
+  redis:
+    image: redis:7-alpine
+
+  api:
+    build: ./api
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api

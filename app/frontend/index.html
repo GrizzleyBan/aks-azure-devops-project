@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AKS Visit Counter</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 80px auto; text-align: center; }
+    #count { font-size: 4rem; margin: 20px 0; }
+    button { font-size: 1rem; padding: 10px 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>AKS Visit Counter</h1>
+  <div id="count">-</div>
+  <p id="pod"></p>
+  <button onclick="visit()">Count a visit</button>
+  <script>
+    async function visit() {
+      const res = await fetch("/api/visits");
+      const data = await res.json();
+      document.getElementById("count").textContent = data.visits;
+      document.getElementById("pod").textContent = "Served by: " + data.served_by;
+    }
+  </script>
+</body>
+</html>
