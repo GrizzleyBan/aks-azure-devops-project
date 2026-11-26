@@ -27,8 +27,8 @@ Azure (AKS, ACR), Kubernetes, Docker, Terraform, GitHub Actions, Prometheus, Gra
 - [x] Repo structure
 - [x] App and containers
 - [x] Container registry (ACR) and images
-- [ ] AKS cluster
-- [ ] Kubernetes deployment
+- [x] AKS cluster
+- [x] Kubernetes deployment
 - [ ] Ingress, autoscaling, health checks
 - [ ] Terraform modules
 - [ ] CI/CD pipeline
@@ -60,7 +60,7 @@ Cluster (in progress; the VM size must be one your subscription allows and has q
 
 ```bash
 az aks create --resource-group $RG --name $AKS_NAME --node-count 1 \
-  --node-vm-size <allowed-vm-size> --tier free --generate-ssh-keys --attach-acr $ACR_NAME
+  --node-vm-size Standard_EC2as_v5 --tier free --generate-ssh-keys --attach-acr $ACR_NAME
 az aks get-credentials --resource-group $RG --name $AKS_NAME
 ```
 
@@ -71,7 +71,18 @@ az aks get-credentials --resource-group $RG --name $AKS_NAME
 - Delete everything when finished: `az group delete --name $RG --yes`
 
 ## How to Deploy
-_Coming soon._
+## Deploy to Kubernetes
+Manifests live in `k8s/`: namespace, Redis, API (2 replicas), and frontend, each with a Service.
+
+```bash
+kubectl apply -f k8s/
+kubectl get pods -n aks-demo
+kubectl port-forward -n aks-demo svc/frontend 8080:80
+```
+Open http://localhost:8080. The "Served by" line alternates between API pods, showing the
+Service load-balancing across replicas. Deleting a pod shows the Deployment recreating it.
+
+Note: Redis has no persistent storage yet, so the counter resets if its pod restarts.
 
 ## What I Learned
 Real problems hit while building this, and how I solved them:
@@ -84,3 +95,4 @@ Real problems hit while building this, and how I solved them:
 - **VM size not allowed or no quota:** a VM size has to pass two checks, being available to the
   subscription in that region and having vCPU quota for its family. Checked allowed sizes and
   `az vm list-usage` to pick one that passes both.
+  **Self-healing feauture witnessed:** Really interesting how i saw a new pod get created immediately after i deleted one, a new one was spun up rather quickly to keep the application always running and at the desired 2 nodes.
